@@ -72,3 +72,6 @@ balance input underneath. Header slimmed down to match.
 
 v1.5: date numbers a tad bigger for fat fingers (Thomas's words — not too big):
 day font 12px -> 14.5px, cell height 22px -> 32px, a little more padding.
+
+v1.6: one short hint line above the first calendar — "Tap once for AL, twice
+for SL" (AL in green, SL in blue). Nothing else; Thomas asked for just that line.
