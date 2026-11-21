@@ -40,7 +40,7 @@
 <body>
 <header>
   <h1>📬 Carrier Dashboard</h1>
-  <p>City carrier tools — Calendar v1 (2027)</p>
+  <p>City carrier tools — Calendar v1.1 (Nov 2026 – Dec 2027)</p>
 </header>
 <main>
   <!-- Step 1: pick your color -->
@@ -53,12 +53,12 @@
 
   <!-- Step 2: your year -->
   <section id="summary" class="card hidden">
-    <h2 style="margin-top:0">Your <span id="myColorName"></span> schedule — 2027</h2>
+    <h2 style="margin-top:0">Your <span id="myColorName"></span> schedule — Nov 2026 – Dec 2027</h2>
     <div class="stats">
       <div class="stat"><span>Next day off</span><b id="nextOff">—</b></div>
       <div class="stat"><span>Next long weekend (Fri–Sun)</span><b id="nextLong">—</b></div>
       <div class="stat"><span>Next postal holiday</span><b id="nextHol">—</b></div>
-      <div class="stat"><span>Days off in 2027 (incl. Sundays)</span><b id="countOff">—</b></div>
+      <div class="stat"><span>Days off in this calendar (incl. Sundays)</span><b id="countOff">—</b></div>
     </div>
     <p><button class="link" id="changeColor">Change my color</button></p>
     <p class="legend">Your rotating day off is highlighted in your color. <b>Gray box</b> = postal holiday. <b>$</b> = payday (every other Friday). Sundays shaded — off for all carriers.</p>
@@ -67,7 +67,7 @@
   <section id="yearWrap" class="year hidden"></section>
 
   <section class="card">
-    <h3 style="margin-top:0">2027 Postal Holidays (11)</h3>
+    <h3 style="margin-top:0">Postal Holidays (Nov 2026 – Dec 2027)</h3>
     <ul id="holidayList" style="margin:0;padding-left:18px;line-height:1.8;font-size:14px"></ul>
     <p style="font-size:12px;color:#666">Note: when a holiday falls on your rotating day off, USPS rules move your holiday to the preceding scheduled workday — your steward has the final word for your office.</p>
   </section>
@@ -87,41 +87,50 @@ const COLORS = {
   red:    {letter:'F', name:'Red',    hex:'#d23b2e', text:'#fff'},
 };
 
-// Rotation generator (verified against the printed 2027 calendar, all 12 months):
-// Anchor: Fri Jan 1, 2027 = D (Green) off. Order A->B->C->D->E->F, advancing each
+// Rotation generator (verified against the printed 2027 calendar, all 12 months,
+// and against a real Yellow carrier's Nov-Dec 2026 days off, 9/9):
+// Anchor: Mon Nov 2, 2026 = B (Yellow) off. Order A->B->C->D->E->F, advancing each
 // non-Sunday day, except Saturday repeats Friday's schedule (the Fri+Sat long-weekend pair).
+// Cross-check: this generator lands Fri Jan 1, 2027 on D (Green), matching the printed calendar.
+const iso = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const fmt = d => d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+
 const ORDER = ['A','B','C','D','E','F'];
-function scheduleOff(date){ // returns letter whose rotating day off this date is, or null (Sunday)
-  const start = new Date(2027,0,1);
-  if (date < start) return null;
-  let idx = ORDER.indexOf('D');
-  const d = new Date(start);
-  while (d <= date){
-    const wd = d.getDay(); // 0 Sun
+const SCHED = {}; // iso -> letter whose rotating day off it is (Sundays: none, off for all)
+(function(){
+  let idx = ORDER.indexOf('B');
+  const d = new Date(2026,10,2); // Mon Nov 2, 2026
+  const end = new Date(2027,11,31);
+  while (d <= end){
+    const wd = d.getDay();
     if (wd !== 0){
-      if (d.getTime() !== start.getTime() && wd !== 6) idx = (idx+1)%6;
-      if (d.getTime() === date.getTime()) return ORDER[idx];
+      if (d.getTime() !== new Date(2026,10,2).getTime() && wd !== 6) idx = (idx+1)%6;
+      SCHED[iso(d)] = ORDER[idx];
     }
     d.setDate(d.getDate()+1);
   }
-  return null;
-}
+})();
+function scheduleOff(date){ return SCHED[iso(date)] || null; }
 
-const HOLIDAYS_2027 = [
+const HOLIDAYS = [
+  ['2026-11-11','Veterans Day'],['2026-11-26','Thanksgiving'],['2026-12-25','Christmas Day'],
   ['2027-01-01',"New Year's Day"],['2027-01-18','MLK Jr. Day'],['2027-02-15',"Presidents' Day"],
   ['2027-05-31','Memorial Day'],['2027-06-19','Juneteenth'],['2027-07-05','Independence Day (observed)'],
   ['2027-09-06','Labor Day'],['2027-10-11','Columbus Day'],['2027-11-11','Veterans Day'],
   ['2027-11-25','Thanksgiving'],['2027-12-25','Christmas Day'],
 ];
-const holidaySet = new Set(HOLIDAYS_2027.map(h=>h[0]));
-const holidayName = Object.fromEntries(HOLIDAYS_2027);
-// Paydays 2027: every other Friday from Jan 15 to Dec 31 (26)
+const holidaySet = new Set(HOLIDAYS.map(h=>h[0]));
+const holidayName = Object.fromEntries(HOLIDAYS);
+// Paydays: every other Friday, anchored on Fri Nov 20, 2026 (confirmed payday),
+// starting Fri Nov 6, 2026. If a payday lands on a postal holiday, it pays the day
+// before (Fri Jan 1, 2027 -> Thu Dec 31, 2026).
 const paydays = new Set();
-for (let d = new Date(2027,0,15); d.getFullYear()===2027; d.setDate(d.getDate()+14))
-  paydays.add(d.toISOString().slice(0,10));
+for (let d = new Date(2026,10,6); d <= new Date(2027,11,31); d.setDate(d.getDate()+14)){
+  const p = new Date(d);
+  if (holidaySet.has(iso(p))) p.setDate(p.getDate()-1);
+  paydays.add(iso(p));
+}
 
-const iso = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-const fmt = d => d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
 
 function renderYear(colorKey){
   const c = COLORS[colorKey];
@@ -129,12 +138,12 @@ function renderYear(colorKey){
   const wrap = document.getElementById('yearWrap'); wrap.innerHTML='';
   const today = new Date(); today.setHours(0,0,0,0);
   let nextOff=null, nextLong=null, count=0;
-  for (let m=0;m<12;m++){
-    const first = new Date(2027,m,1), days = new Date(2027,m+1,0).getDate();
-    let html = `<div class="month"><h3>${first.toLocaleDateString('en-US',{month:'long'}).toUpperCase()}</h3><table><tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr><tr>`;
+  for (let mi=0; mi<14; mi++){
+    const first = new Date(2026,10+mi,1), m = first.getMonth(), y = first.getFullYear(), days = new Date(y,m+1,0).getDate();
+    let html = `<div class="month"><h3>${first.toLocaleDateString('en-US',{month:'long'}).toUpperCase()} ${y}</h3><table><tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr><tr>`;
     for (let i=0;i<first.getDay();i++) html+='<td></td>';
     for (let day=1;day<=days;day++){
-      const d = new Date(2027,m,day), wd=d.getDay(), key=iso(d);
+      const d = new Date(y,m,day), wd=d.getDay(), key=iso(d);
       const isMine = scheduleOff(d)===c.letter && wd!==0;
       if (wd===0 || isMine) count++;
       if (d>=today && isMine && !nextOff) nextOff=d;
@@ -148,7 +157,7 @@ function renderYear(colorKey){
     html+='</tr></table></div>';
     wrap.innerHTML+=html;
   }
-  const nextHol = HOLIDAYS_2027.map(h=>new Date(h[0]+'T12:00:00')).find(d=>d>=today);
+  const nextHol = HOLIDAYS.map(h=>new Date(h[0]+'T12:00:00')).find(d=>d>=today);
   document.getElementById('nextOff').textContent = nextOff?fmt(nextOff):'—';
   document.getElementById('nextLong').textContent = nextLong?fmt(nextLong):'—';
   document.getElementById('nextHol').textContent = nextHol?fmt(nextHol)+' — '+holidayName[iso(nextHol)]:'—';
@@ -160,7 +169,7 @@ function renderYear(colorKey){
 
 // Holiday list
 document.getElementById('holidayList').innerHTML =
-  HOLIDAYS_2027.map(([k,n])=>`<li>${fmt(new Date(k+'T12:00:00'))} — ${n}</li>`).join('');
+  HOLIDAYS.map(([k,n])=>`<li>${fmt(new Date(k+'T12:00:00'))} — ${n}</li>`).join('');
 
 // Picker
 const sw = document.getElementById('swatches');

@@ -2,10 +2,11 @@
 
 A city carrier dashboard. First module: the color-coded calendar.
 
-## Calendar (v1 — 2027)
+## Calendar (v1.1 — Nov 2026 – Dec 2027)
 - Tap **Calendar**, pick your color (Black / Yellow / Blue / Green / Brown / Red),
-  and you get your full-year schedule: your rotating days off highlighted in your
-  color, Sundays off for everyone, all 11 postal holidays (gray), and paydays ($).
+  and you get your schedule from November 2026 through December 2027: your rotating
+  days off highlighted in your color, Sundays off for everyone, all postal holidays
+  in that span (gray), and paydays ($).
 - Your color is remembered on the device — you only pick it once.
 - Header cards show your next day off, next long weekend (Fri–Sun), next holiday,
   and total days off in 2027.
@@ -28,7 +29,8 @@ Jan–Apr 2027.
 Rotation rule (generates the whole year, no hard-coded table):
 Sunday off for all. One rotating day off per week, moving one day later each week
 (Mon → Tue → Wed → Thu → Fri), then Fri+Sat together (long weekend), then back to
-Monday. Anchor for 2027: Friday, Jan 1 = Green (D) off. Daily order cycles
+Monday. Generator anchor: Monday, Nov 2, 2026 = Yellow (B) off; it lands Friday, Jan 1,
+2027 on Green (D), matching the printed calendar. Daily order cycles
 A→B→C→D→E→F, Saturday repeats Friday's group.
 
 Colors differ between branches — the picker also lets a carrier identify their
@@ -39,7 +41,9 @@ Jan 1 New Year's · Jan 18 MLK · Feb 15 Presidents' · May 31 Memorial ·
 Jun 19 Juneteenth · Jul 5 Independence Day (observed) · Sep 6 Labor ·
 Oct 11 Columbus · Nov 11 Veterans · Nov 25 Thanksgiving · Dec 25 Christmas
 
-Paydays: 26, every other Friday, Jan 15 – Dec 31, 2027.
+Paydays: every other Friday, anchored on Fri Nov 20, 2026 (a confirmed payday),
+starting Nov 6, 2026. 2027 has 26 (Jan 15 – Dec 31). A payday that lands on a
+postal holiday pays the day before (Fri Jan 1, 2027 -> Thu Dec 31, 2026).
 
 ## Roadmap ideas
 - 2026 + 2028 years, month view, "best weeks to take leave" by color
