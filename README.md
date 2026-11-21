@@ -79,3 +79,9 @@ for SL" (AL in green, SL in blue). Nothing else; Thomas asked for just that line
 v1.7: same as v1.6, plus the version number is back in the header subtitle
 ("Calendar · v1.7 · Nov 2026 – Dec 2027") — Thomas couldn't tell whether the
 update had landed because v1.4 had dropped the version from the page.
+
+v1.8: bug fix — the v1.6 "Tap once for AL, twice for SL" line was in the page
+but never un-hidden (a patch missed its target in renderYear), so it never
+appeared. Fixed, and this time verified by simulating a page load with a saved
+color: hint, balance bar, and calendar all show; picker hides. Lesson recorded:
+assert every patch replacement and test the load path, not just the logic.
