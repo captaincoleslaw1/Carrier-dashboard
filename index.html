@@ -8,7 +8,7 @@
   :root{--ink:#1a1a1a;--muted:#666;--line:#ddd;--bg:#f7f7f5;--card:#fff}
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
-  header{padding:16px; background:#123a6d;color:#fff}
+  header{padding:14px 16px 10px; background:#123a6d;color:#fff}
   header h1{margin:0;font-size:20px}
   header p{margin:4px 0 0;opacity:.85;font-size:13px}
   main{max-width:1100px;margin:0 auto;padding:16px}
@@ -17,15 +17,24 @@
   .swatch{border:2px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;background:#fff;text-align:left;font-size:15px}
   .swatch .dot{display:inline-block;width:18px;height:18px;border-radius:50%;margin-right:8px;vertical-align:-3px;border:1px solid #999}
   /* Sticky balance bar — follows you down the page */
-  #balanceBar{position:sticky;top:0;z-index:50;background:#123a6d;color:#fff;border-radius:0 0 12px 12px;
-    padding:10px 14px;margin:-16px -16px 16px;box-shadow:0 3px 10px rgba(0,0,0,.25)}
-  #balanceBar .row{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end}
-  #balanceBar label{font-size:12px;display:block;opacity:.9}
-  #balanceBar input{width:90px;font-size:17px;padding:5px 7px;border-radius:7px;border:none;margin-top:3px}
-  #balanceBar .rem{font-size:13px;line-height:1.35}
-  #balanceBar .rem b{font-size:19px;display:block}
-  #balanceBar .neg{color:#ff9c9c}
-  #balanceBar button{background:none;border:none;color:#bcd3f5;text-decoration:underline;cursor:pointer;font-size:13px;padding:0}
+  #balanceBar{position:sticky;top:8px;z-index:50;background:#123a6d;color:#fff;border-radius:14px;
+    padding:12px;margin:0 0 14px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+  #balanceBar .barTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  #barColorChip{display:flex;align-items:center;gap:8px;font-size:16px}
+  #barColorChip .cdot{width:16px;height:16px;border-radius:50%;border:2px solid #fff;display:inline-block}
+  #balanceBar #changeColor{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;
+    border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer;text-decoration:none}
+  #balanceBar .barGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .balPanel{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:10px 12px}
+  .balLabel{font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+  .balLeft{margin:4px 0 6px;font-size:14px}
+  .balLeft b{font-size:25px;margin-right:5px}
+  .balMeter{height:6px;background:rgba(255,255,255,.22);border-radius:3px;overflow:hidden;margin-bottom:9px}
+  .balMeter i{display:block;height:100%;border-radius:3px;transition:width .2s}
+  .alPanel .balMeter i{background:#35b558}
+  .slPanel .balMeter i{background:#6db1f2}
+  .balInput{display:flex;align-items:center;gap:6px;font-size:13px;opacity:.95}
+  .balInput input{width:72px;font-size:16px;padding:5px 7px;border-radius:7px;border:none;color:#1a1a1a}
   .year{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
   .month{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px}
   .month h3{margin:2px 0 8px;text-align:center;letter-spacing:.06em;font-size:14px}
@@ -53,7 +62,7 @@
 <body>
 <header>
   <h1>📬 Carrier Dashboard</h1>
-  <p>City carrier tools — Calendar v1.3 (Nov 2026 – Dec 2027)</p>
+  <p>Calendar · Nov 2026 – Dec 2027</p>
 </header>
 <main>
   <!-- Step 1: pick your color -->
@@ -64,13 +73,23 @@
 
   <!-- Sticky balances -->
   <div id="balanceBar" class="hidden">
-    <div class="row">
-      <div><label>&nbsp;</label><b id="barColor" style="font-size:17px"></b></div>
-      <div><label for="alInput">AL Balance (hours)</label><input id="alInput" type="number" inputmode="decimal" min="0" step="0.5" placeholder="0"></div>
-      <div class="rem">AL left<b id="alLeft">—</b></div>
-      <div><label for="slInput">SL Balance (hours)</label><input id="slInput" type="number" inputmode="decimal" min="0" step="0.5" placeholder="0"></div>
-      <div class="rem">SL left<b id="slLeft">—</b></div>
-      <div><label>&nbsp;</label><button id="changeColor">Change color</button></div>
+    <div class="barTop">
+      <span id="barColorChip"><span class="cdot"></span><b id="barColor"></b></span>
+      <button id="changeColor">Change color</button>
+    </div>
+    <div class="barGrid">
+      <div class="balPanel alPanel">
+        <div class="balLabel">Annual Leave · AL</div>
+        <div class="balLeft"><b id="alLeft">—</b>left</div>
+        <div class="balMeter"><i id="alMeter"></i></div>
+        <label class="balInput">Balance <input id="alInput" type="number" inputmode="decimal" min="0" step="0.5" placeholder="0"> hrs</label>
+      </div>
+      <div class="balPanel slPanel">
+        <div class="balLabel">Sick Leave · SL</div>
+        <div class="balLeft"><b id="slLeft">—</b>left</div>
+        <div class="balMeter"><i id="slMeter"></i></div>
+        <label class="balInput">Balance <input id="slInput" type="number" inputmode="decimal" min="0" step="0.5" placeholder="0"> hrs</label>
+      </div>
     </div>
   </div>
 
@@ -177,16 +196,20 @@ function paintCell(td){
 
 function updateBalances(){
   const r = remaining();
+  const alBal = parseFloat(state.al)||0, slBal = parseFloat(state.sl)||0;
   const alEl = document.getElementById('alLeft'), slEl = document.getElementById('slLeft');
   alEl.textContent = r.alLeft + ' hrs';
   slEl.textContent = r.slLeft + ' hrs';
-  alEl.className = r.alLeft < 0 ? 'neg' : '';
-  slEl.className = r.slLeft < 0 ? 'neg' : '';
+  alEl.style.color = r.alLeft < 0 ? '#ff9c9c' : '';
+  slEl.style.color = r.slLeft < 0 ? '#ff9c9c' : '';
+  document.getElementById('alMeter').style.width = alBal>0 ? Math.max(0, Math.min(100, r.alLeft/alBal*100)) + '%' : '0%';
+  document.getElementById('slMeter').style.width = slBal>0 ? Math.max(0, Math.min(100, r.slLeft/slBal*100)) + '%' : '0%';
 }
 
 function renderYear(){
   const c = COLORS[state.color];
   document.getElementById('barColor').textContent = c.name;
+  document.querySelector('#barColorChip .cdot').style.background = c.hex;
   document.getElementById('alInput').value = state.al;
   document.getElementById('slInput').value = state.sl;
   const wrap = document.getElementById('yearWrap'); wrap.innerHTML='';

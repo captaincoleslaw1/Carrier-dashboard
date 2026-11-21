@@ -63,3 +63,9 @@ postal holiday pays the day before (Fri Jan 1, 2027 -> Thu Dec 31, 2026).
 v1.3: removed the summary card entirely (next day off / next long weekend /
 next holiday / leave-days stats and the instruction paragraph under the
 balances). The screen is now: sticky AL/SL bar, then the calendar.
+
+v1.4: cleaned up the sticky balance bar (Thomas called v1.2's layout sloppy —
+labels and values wrapped unevenly on a phone). New bar: a color chip + Change
+color pill on top, then two equal side-by-side panels (AL green meter, SL blue
+meter), each with the hours-left big, a thin meter of what's left, and the
+balance input underneath. Header slimmed down to match.
