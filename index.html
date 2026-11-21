@@ -16,17 +16,30 @@
   .swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:12px}
   .swatch{border:2px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;background:#fff;text-align:left;font-size:15px}
   .swatch .dot{display:inline-block;width:18px;height:18px;border-radius:50%;margin-right:8px;vertical-align:-3px;border:1px solid #999}
-  .swatch.sel{border-color:#123a6d;outline:2px solid #123a6d33}
+  /* Sticky balance bar — follows you down the page */
+  #balanceBar{position:sticky;top:0;z-index:50;background:#123a6d;color:#fff;border-radius:0 0 12px 12px;
+    padding:10px 14px;margin:-16px -16px 16px;box-shadow:0 3px 10px rgba(0,0,0,.25)}
+  #balanceBar .row{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end}
+  #balanceBar label{font-size:12px;display:block;opacity:.9}
+  #balanceBar input{width:90px;font-size:17px;padding:5px 7px;border-radius:7px;border:none;margin-top:3px}
+  #balanceBar .rem{font-size:13px;line-height:1.35}
+  #balanceBar .rem b{font-size:19px;display:block}
+  #balanceBar .neg{color:#ff9c9c}
+  #balanceBar button{background:none;border:none;color:#bcd3f5;text-decoration:underline;cursor:pointer;font-size:13px;padding:0}
   .year{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
   .month{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px}
   .month h3{margin:2px 0 8px;text-align:center;letter-spacing:.06em;font-size:14px}
   table{width:100%;border-collapse:collapse;table-layout:fixed}
   th{font-size:10px;color:var(--muted);padding:2px 0}
   td{text-align:center;font-size:12px;padding:3px 0;border-radius:4px;height:22px}
-  td.sun{color:#999;background:#f0f0f0}
-  td.nsd{font-weight:700;color:#000}
-  td.holiday{box-shadow:inset 0 0 0 2px #9a9a9a;background:#e3e3e3;font-weight:700}
+  td.day{cursor:pointer}
+  td.sun{color:#999;background:#f0f0f0;cursor:default}
+  td.nsd{font-weight:700}
+  td.holiday{background:#d23b2e;color:#fff;font-weight:700}
+  td.al{background:#35b558 !important;color:#000 !important;font-weight:700}
+  td.sl{background:#2f7fd0 !important;color:#fff !important;font-weight:700}
   td.payday::after{content:" $";color:#0a7a33;font-weight:700;font-size:10px}
+  td.al.payday::after,td.sl.payday::after,td.holiday.payday::after{color:#fff}
   td.today{outline:2px solid #123a6d;outline-offset:-2px}
   .stats{display:flex;flex-wrap:wrap;gap:10px}
   .stat{flex:1;min-width:160px;background:#eef3fa;border-radius:10px;padding:10px}
@@ -40,28 +53,36 @@
 <body>
 <header>
   <h1>📬 Carrier Dashboard</h1>
-  <p>City carrier tools — Calendar v1.1 (Nov 2026 – Dec 2027)</p>
+  <p>City carrier tools — Calendar v1.2 (Nov 2026 – Dec 2027)</p>
 </header>
 <main>
   <!-- Step 1: pick your color -->
   <section id="picker" class="card">
-    <h2 style="margin-top:0">What's your color?</h2>
-    <p>City carriers are split into six rotating schedules, each with its own color. Pick yours and you'll see <em>your</em> days off for the whole year. Sundays are off for everyone.</p>
-    <p style="font-size:13px;color:#666">Don't know your color? If you were off Monday, Nov 2, 2026, you're <b>Yellow</b>. Off Mon Nov 9 → Black · Tue Nov 3 → Blue · Wed Nov 4 → Green · Thu Nov 5 → Brown · Fri–Sat Nov 6–7 → Red.</p>
+    <h2 style="margin-top:0">Pick your color</h2>
     <div class="swatches" id="swatches"></div>
   </section>
 
-  <!-- Step 2: your year -->
+  <!-- Sticky balances -->
+  <div id="balanceBar" class="hidden">
+    <div class="row">
+      <div><label>&nbsp;</label><b id="barColor" style="font-size:17px"></b></div>
+      <div><label for="alInput">AL Balance (hours)</label><input id="alInput" type="number" inputmode="decimal" min="0" step="0.5" placeholder="0"></div>
+      <div class="rem">AL left<b id="alLeft">—</b></div>
+      <div><label for="slInput">SL Balance (hours)</label><input id="slInput" type="number" inputmode="decimal" min="0" step="0.5" placeholder="0"></div>
+      <div class="rem">SL left<b id="slLeft">—</b></div>
+      <div><label>&nbsp;</label><button id="changeColor">Change color</button></div>
+    </div>
+  </div>
+
+  <!-- Summary -->
   <section id="summary" class="card hidden">
-    <h2 style="margin-top:0">Your <span id="myColorName"></span> schedule — Nov 2026 – Dec 2027</h2>
     <div class="stats">
       <div class="stat"><span>Next day off</span><b id="nextOff">—</b></div>
       <div class="stat"><span>Next long weekend (Fri–Sun)</span><b id="nextLong">—</b></div>
       <div class="stat"><span>Next postal holiday</span><b id="nextHol">—</b></div>
-      <div class="stat"><span>Days off in this calendar (incl. Sundays)</span><b id="countOff">—</b></div>
+      <div class="stat"><span>Leave days marked</span><b id="leaveCount">—</b></div>
     </div>
-    <p><button class="link" id="changeColor">Change my color</button></p>
-    <p class="legend">Your rotating day off is highlighted in your color. <b>Gray box</b> = postal holiday. <b>$</b> = payday (every other Friday). Sundays shaded — off for all carriers.</p>
+    <p class="legend" style="margin-bottom:0">Tap a date once to mark it <b style="color:#1d7a3a">AL (green)</b> — tap it again for <b style="color:#2f7fd0">SL (blue)</b> — tap a third time to clear it. Each marked day takes <b>8 hours</b> off that balance. Your rotating day off is in your color, <b style="color:#d23b2e">holidays are red</b>, <b>$</b> = payday, Sundays are off for everyone. Your balances and marked days are saved on this device.</p>
   </section>
 
   <section id="yearWrap" class="year hidden"></section>
@@ -74,10 +95,11 @@
 </main>
 
 <script>
+const iso = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const fmt = d => d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+
 // ---- Deciphered from the 2027 LetterCarrierCalendars.com color-coded calendar ----
-// Six rotating schedules. In THIS calendar's colors:
 //   A = Black, B = Yellow, C = Blue, D = Green, E = Brown, F = Red
-// Verified: Yellow (B) matches Thomas's known NSDs for all of 2027, 35/35 dates.
 const COLORS = {
   black:  {letter:'A', name:'Black',  hex:'#222222', text:'#fff'},
   yellow: {letter:'B', name:'Yellow', hex:'#f2c200', text:'#000'},
@@ -88,23 +110,18 @@ const COLORS = {
 };
 
 // Rotation generator (verified against the printed 2027 calendar, all 12 months,
-// and against a real Yellow carrier's Nov-Dec 2026 days off, 9/9):
-// Anchor: Mon Nov 2, 2026 = B (Yellow) off. Order A->B->C->D->E->F, advancing each
-// non-Sunday day, except Saturday repeats Friday's schedule (the Fri+Sat long-weekend pair).
-// Cross-check: this generator lands Fri Jan 1, 2027 on D (Green), matching the printed calendar.
-const iso = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-const fmt = d => d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
-
+// and a real Yellow carrier's Nov-Dec 2026 days off, 9/9):
+// Anchor: Mon Nov 2, 2026 = B (Yellow). Order A->B->C->D->E->F, advancing each
+// non-Sunday day, except Saturday repeats Friday (the Fri+Sat long-weekend pair).
 const ORDER = ['A','B','C','D','E','F'];
-const SCHED = {}; // iso -> letter whose rotating day off it is (Sundays: none, off for all)
+const SCHED = {};
 (function(){
   let idx = ORDER.indexOf('B');
-  const d = new Date(2026,10,2); // Mon Nov 2, 2026
-  const end = new Date(2027,11,31);
+  const start = new Date(2026,10,2), d = new Date(start), end = new Date(2027,11,31);
   while (d <= end){
     const wd = d.getDay();
     if (wd !== 0){
-      if (d.getTime() !== new Date(2026,10,2).getTime() && wd !== 6) idx = (idx+1)%6;
+      if (d.getTime() !== start.getTime() && wd !== 6) idx = (idx+1)%6;
       SCHED[iso(d)] = ORDER[idx];
     }
     d.setDate(d.getDate()+1);
@@ -121,9 +138,8 @@ const HOLIDAYS = [
 ];
 const holidaySet = new Set(HOLIDAYS.map(h=>h[0]));
 const holidayName = Object.fromEntries(HOLIDAYS);
-// Paydays: every other Friday, anchored on Fri Nov 20, 2026 (confirmed payday),
-// starting Fri Nov 6, 2026. If a payday lands on a postal holiday, it pays the day
-// before (Fri Jan 1, 2027 -> Thu Dec 31, 2026).
+// Paydays: every other Friday, anchored on Fri Nov 20, 2026 (confirmed), starting
+// Fri Nov 6, 2026. A payday landing on a postal holiday pays the day before.
 const paydays = new Set();
 for (let d = new Date(2026,10,6); d <= new Date(2027,11,31); d.setDate(d.getDate()+14)){
   const p = new Date(d);
@@ -131,13 +147,64 @@ for (let d = new Date(2026,10,6); d <= new Date(2027,11,31); d.setDate(d.getDate
   paydays.add(iso(p));
 }
 
+// ---- Leave state (saved on this device) ----
+const HOURS_PER_DAY = 8;
+let state = {color:null, al:'', sl:'', marks:{}}; // marks: iso -> 'AL' | 'SL'
+try {
+  const savedState = JSON.parse(localStorage.getItem('carrierDashboard')||'null');
+  if (savedState && typeof savedState==='object') state = Object.assign(state, savedState);
+  if (!state.color) { const legacy = localStorage.getItem('carrierColor'); if (legacy) state.color = legacy; }
+} catch(e){}
+function save(){ localStorage.setItem('carrierDashboard', JSON.stringify(state)); }
+function cycleMark(cur){ return cur==null ? 'AL' : cur==='AL' ? 'SL' : null; } // tap: none -> AL -> SL -> none
+function markCounts(){
+  let al=0, sl=0;
+  for (const k in state.marks){ if (state.marks[k]==='AL') al++; else if (state.marks[k]==='SL') sl++; }
+  return {al, sl};
+}
+function remaining(){
+  const {al, sl} = markCounts();
+  const alBal = parseFloat(state.al)||0, slBal = parseFloat(state.sl)||0;
+  return {alLeft: alBal - al*HOURS_PER_DAY, slLeft: slBal - sl*HOURS_PER_DAY, alDays: al, slDays: sl};
+}
 
-function renderYear(colorKey){
-  const c = COLORS[colorKey];
-  document.getElementById('myColorName').textContent = c.name;
+function paintCell(td){
+  const key = td.dataset.date, c = COLORS[state.color];
+  const d = new Date(key+'T12:00:00'), wd = d.getDay();
+  td.className = '';
+  td.style.background=''; td.style.color='';
+  if (wd===0){ td.className='sun'; return; }
+  td.classList.add('day');
+  const mark = state.marks[key];
+  if (mark==='AL') td.classList.add('al');
+  else if (mark==='SL') td.classList.add('sl');
+  else if (holidaySet.has(key)) td.classList.add('holiday');
+  else if (scheduleOff(d)===c.letter){ td.classList.add('nsd'); td.style.background=c.hex; td.style.color=c.text; }
+  if (paydays.has(key)) td.classList.add('payday');
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (d.toDateString()===today.toDateString()) td.classList.add('today');
+  td.title = holidaySet.has(key) ? holidayName[key] : '';
+}
+
+function updateBalances(){
+  const r = remaining();
+  const alEl = document.getElementById('alLeft'), slEl = document.getElementById('slLeft');
+  alEl.textContent = r.alLeft + ' hrs';
+  slEl.textContent = r.slLeft + ' hrs';
+  alEl.className = r.alLeft < 0 ? 'neg' : '';
+  slEl.className = r.slLeft < 0 ? 'neg' : '';
+  document.getElementById('leaveCount').textContent =
+    r.alDays + ' AL · ' + r.slDays + ' SL';
+}
+
+function renderYear(){
+  const c = COLORS[state.color];
+  document.getElementById('barColor').textContent = c.name;
+  document.getElementById('alInput').value = state.al;
+  document.getElementById('slInput').value = state.sl;
   const wrap = document.getElementById('yearWrap'); wrap.innerHTML='';
   const today = new Date(); today.setHours(0,0,0,0);
-  let nextOff=null, nextLong=null, count=0;
+  let nextOff=null, nextLong=null;
   for (let mi=0; mi<14; mi++){
     const first = new Date(2026,10+mi,1), m = first.getMonth(), y = first.getFullYear(), days = new Date(y,m+1,0).getDate();
     let html = `<div class="month"><h3>${first.toLocaleDateString('en-US',{month:'long'}).toUpperCase()} ${y}</h3><table><tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr><tr>`;
@@ -145,49 +212,59 @@ function renderYear(colorKey){
     for (let day=1;day<=days;day++){
       const d = new Date(y,m,day), wd=d.getDay(), key=iso(d);
       const isMine = scheduleOff(d)===c.letter && wd!==0;
-      if (wd===0 || isMine) count++;
       if (d>=today && isMine && !nextOff) nextOff=d;
-      if (d>=today && isMine && wd===5 && !nextLong) nextLong=d; // Friday of Fri+Sat pair
-      const cls=[wd===0?'sun':'', isMine?'nsd':'', holidaySet.has(key)?'holiday':'', paydays.has(key)?'payday':'', d.getTime()===today.getTime()?'today':''].join(' ');
-      const style = isMine ? ` style="background:${c.hex};color:${c.text}"` : '';
-      const title = holidaySet.has(key) ? ` title="${holidayName[key]}"` : '';
-      html+=`<td class="${cls}"${style}${title}>${day}</td>`;
+      if (d>=today && isMine && wd===5 && !nextLong) nextLong=d;
+      html+=`<td data-date="${key}">${day}</td>`;
       if (wd===6 && day<days) html+='</tr><tr>';
     }
     html+='</tr></table></div>';
     wrap.innerHTML+=html;
   }
+  wrap.querySelectorAll('td[data-date]').forEach(paintCell);
   const nextHol = HOLIDAYS.map(h=>new Date(h[0]+'T12:00:00')).find(d=>d>=today);
   document.getElementById('nextOff').textContent = nextOff?fmt(nextOff):'—';
   document.getElementById('nextLong').textContent = nextLong?fmt(nextLong):'—';
   document.getElementById('nextHol').textContent = nextHol?fmt(nextHol)+' — '+holidayName[iso(nextHol)]:'—';
-  document.getElementById('countOff').textContent = count;
+  updateBalances();
+  document.getElementById('balanceBar').classList.remove('hidden');
   document.getElementById('summary').classList.remove('hidden');
   wrap.classList.remove('hidden');
   document.getElementById('picker').classList.add('hidden');
 }
 
+// Tap a date: cycle AL -> SL -> clear, balances drop 8 hrs per marked day
+document.getElementById('yearWrap').addEventListener('click', e=>{
+  const td = e.target.closest('td[data-date]');
+  if (!td || td.classList.contains('sun')) return;
+  const key = td.dataset.date;
+  const next = cycleMark(state.marks[key]||null);
+  if (next) state.marks[key]=next; else delete state.marks[key];
+  save(); paintCell(td); updateBalances();
+});
+document.getElementById('alInput').addEventListener('input', e=>{ state.al=e.target.value; save(); updateBalances(); });
+document.getElementById('slInput').addEventListener('input', e=>{ state.sl=e.target.value; save(); updateBalances(); });
+
 // Holiday list
 document.getElementById('holidayList').innerHTML =
   HOLIDAYS.map(([k,n])=>`<li>${fmt(new Date(k+'T12:00:00'))} — ${n}</li>`).join('');
 
-// Picker
+// Picker — just pick your color
 const sw = document.getElementById('swatches');
 Object.entries(COLORS).forEach(([key,c])=>{
   const b=document.createElement('button');
   b.className='swatch'; b.innerHTML=`<span class="dot" style="background:${c.hex}"></span>${c.name}`;
-  b.onclick=()=>{ localStorage.setItem('carrierColor',key); renderYear(key); window.scrollTo({top:0,behavior:'smooth'}); };
+  b.onclick=()=>{ state.color=key; save(); renderYear(); window.scrollTo({top:0,behavior:'smooth'}); };
   sw.appendChild(b);
 });
 document.getElementById('changeColor').onclick=()=>{
-  localStorage.removeItem('carrierColor');
+  state.color=null; save();
+  document.getElementById('balanceBar').classList.add('hidden');
   document.getElementById('summary').classList.add('hidden');
   document.getElementById('yearWrap').classList.add('hidden');
   document.getElementById('picker').classList.remove('hidden');
   window.scrollTo({top:0,behavior:'smooth'});
 };
-const saved = localStorage.getItem('carrierColor');
-if (saved && COLORS[saved]) renderYear(saved);
+if (state.color && COLORS[state.color]) renderYear();
 </script>
 </body>
 </html>

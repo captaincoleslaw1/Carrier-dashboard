@@ -2,7 +2,7 @@
 
 A city carrier dashboard. First module: the color-coded calendar.
 
-## Calendar (v1.1 — Nov 2026 – Dec 2027)
+## Calendar (v1.2 — Nov 2026 – Dec 2027)
 - Tap **Calendar**, pick your color (Black / Yellow / Blue / Green / Brown / Red),
   and you get your schedule from November 2026 through December 2027: your rotating
   days off highlighted in your color, Sundays off for everyone, all postal holidays
@@ -10,6 +10,17 @@ A city carrier dashboard. First module: the color-coded calendar.
 - Your color is remembered on the device — you only pick it once.
 - Header cards show your next day off, next long weekend (Fri–Sun), next holiday,
   and total days off in 2027.
+
+## Leave planner (v1.2)
+- The color picker is just the picker — no explanation text.
+- After picking a color, two fillable boxes appear: **AL Balance** and **SL Balance**
+  (hours), in a dark bar that sticks to the top of the screen while you scroll.
+- Tap a date once: it turns **green = AL**. Tap again: **blue = SL**. Tap a third
+  time: cleared. Every marked day subtracts **8 hours** from that balance, shown
+  live in the sticky bar (it goes red if you over-plan past zero).
+- **Holiday boxes are red.** A leave tap on a holiday overrides the red with the
+  AL/SL color. Sundays can't be marked (already off for everyone).
+- Balances and marked days are saved on the device (localStorage), per carrier.
 
 ## How the rotation was deciphered (2027 printed calendar)
 From the LetterCarrierCalendars.com 2027 color-coded days-off calendar, cross-checked
