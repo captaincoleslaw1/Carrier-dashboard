@@ -2,7 +2,7 @@
 
 A city carrier dashboard. First module: the color-coded calendar.
 
-## Calendar (v1.2 — Nov 2026 – Dec 2027)
+## Calendar (v1.3 — Nov 2026 – Dec 2027)
 - Tap **Calendar**, pick your color (Black / Yellow / Blue / Green / Brown / Red),
   and you get your schedule from November 2026 through December 2027: your rotating
   days off highlighted in your color, Sundays off for everyone, all postal holidays
@@ -11,7 +11,7 @@ A city carrier dashboard. First module: the color-coded calendar.
 - Header cards show your next day off, next long weekend (Fri–Sun), next holiday,
   and total days off in 2027.
 
-## Leave planner (v1.2)
+## Leave planner (v1.2, cleaned up in v1.3)
 - The color picker is just the picker — no explanation text.
 - After picking a color, two fillable boxes appear: **AL Balance** and **SL Balance**
   (hours), in a dark bar that sticks to the top of the screen while you scroll.
@@ -59,3 +59,7 @@ postal holiday pays the day before (Fri Jan 1, 2027 -> Thu Dec 31, 2026).
 ## Roadmap ideas
 - 2026 + 2028 years, month view, "best weeks to take leave" by color
 - More dashboard modules (Thomas to define)
+
+v1.3: removed the summary card entirely (next day off / next long weekend /
+next holiday / leave-days stats and the instruction paragraph under the
+balances). The screen is now: sticky AL/SL bar, then the calendar.
