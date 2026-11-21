@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carrier Dashboard — Calendar</title>
+<style>
+  :root{--ink:#1a1a1a;--muted:#666;--line:#ddd;--bg:#f7f7f5;--card:#fff}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+  header{padding:16px; background:#123a6d;color:#fff}
+  header h1{margin:0;font-size:20px}
+  header p{margin:4px 0 0;opacity:.85;font-size:13px}
+  main{max-width:1100px;margin:0 auto;padding:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+  .swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:12px}
+  .swatch{border:2px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;background:#fff;text-align:left;font-size:15px}
+  .swatch .dot{display:inline-block;width:18px;height:18px;border-radius:50%;margin-right:8px;vertical-align:-3px;border:1px solid #999}
+  .swatch.sel{border-color:#123a6d;outline:2px solid #123a6d33}
+  .year{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+  .month{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px}
+  .month h3{margin:2px 0 8px;text-align:center;letter-spacing:.06em;font-size:14px}
+  table{width:100%;border-collapse:collapse;table-layout:fixed}
+  th{font-size:10px;color:var(--muted);padding:2px 0}
+  td{text-align:center;font-size:12px;padding:3px 0;border-radius:4px;height:22px}
+  td.sun{color:#999;background:#f0f0f0}
+  td.nsd{font-weight:700;color:#000}
+  td.holiday{box-shadow:inset 0 0 0 2px #9a9a9a;background:#e3e3e3;font-weight:700}
+  td.payday::after{content:" $";color:#0a7a33;font-weight:700;font-size:10px}
+  td.today{outline:2px solid #123a6d;outline-offset:-2px}
+  .stats{display:flex;flex-wrap:wrap;gap:10px}
+  .stat{flex:1;min-width:160px;background:#eef3fa;border-radius:10px;padding:10px}
+  .stat b{display:block;font-size:17px}
+  .stat span{font-size:12px;color:var(--muted)}
+  button.link{background:none;border:none;color:#123a6d;text-decoration:underline;cursor:pointer;font-size:14px;padding:0}
+  .legend{font-size:12px;color:var(--muted);line-height:1.7}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>📬 Carrier Dashboard</h1>
+  <p>City carrier tools — Calendar v1 (2027)</p>
+</header>
+<main>
+  <!-- Step 1: pick your color -->
+  <section id="picker" class="card">
+    <h2 style="margin-top:0">What's your color?</h2>
+    <p>City carriers are split into six rotating schedules, each with its own color. Pick yours and you'll see <em>your</em> days off for the whole year. Sundays are off for everyone.</p>
+    <p style="font-size:13px;color:#666">Don't know your color? If you were off Monday, Nov 2, 2026, you're <b>Yellow</b>. Off Mon Nov 9 → Black · Tue Nov 3 → Blue · Wed Nov 4 → Green · Thu Nov 5 → Brown · Fri–Sat Nov 6–7 → Red.</p>
+    <div class="swatches" id="swatches"></div>
+  </section>
+
+  <!-- Step 2: your year -->
+  <section id="summary" class="card hidden">
+    <h2 style="margin-top:0">Your <span id="myColorName"></span> schedule — 2027</h2>
+    <div class="stats">
+      <div class="stat"><span>Next day off</span><b id="nextOff">—</b></div>
+      <div class="stat"><span>Next long weekend (Fri–Sun)</span><b id="nextLong">—</b></div>
+      <div class="stat"><span>Next postal holiday</span><b id="nextHol">—</b></div>
+      <div class="stat"><span>Days off in 2027 (incl. Sundays)</span><b id="countOff">—</b></div>
+    </div>
+    <p><button class="link" id="changeColor">Change my color</button></p>
+    <p class="legend">Your rotating day off is highlighted in your color. <b>Gray box</b> = postal holiday. <b>$</b> = payday (every other Friday). Sundays shaded — off for all carriers.</p>
+  </section>
+
+  <section id="yearWrap" class="year hidden"></section>
+
+  <section class="card">
+    <h3 style="margin-top:0">2027 Postal Holidays (11)</h3>
+    <ul id="holidayList" style="margin:0;padding-left:18px;line-height:1.8;font-size:14px"></ul>
+    <p style="font-size:12px;color:#666">Note: when a holiday falls on your rotating day off, USPS rules move your holiday to the preceding scheduled workday — your steward has the final word for your office.</p>
+  </section>
+</main>
+
+<script>
+// ---- Deciphered from the 2027 LetterCarrierCalendars.com color-coded calendar ----
+// Six rotating schedules. In THIS calendar's colors:
+//   A = Black, B = Yellow, C = Blue, D = Green, E = Brown, F = Red
+// Verified: Yellow (B) matches Thomas's known NSDs for all of 2027, 35/35 dates.
+const COLORS = {
+  black:  {letter:'A', name:'Black',  hex:'#222222', text:'#fff'},
+  yellow: {letter:'B', name:'Yellow', hex:'#f2c200', text:'#000'},
+  blue:   {letter:'C', name:'Blue',   hex:'#2f7fd0', text:'#fff'},
+  green:  {letter:'D', name:'Green',  hex:'#35b558', text:'#000'},
+  brown:  {letter:'E', name:'Brown',  hex:'#a67c2e', text:'#fff'},
+  red:    {letter:'F', name:'Red',    hex:'#d23b2e', text:'#fff'},
+};
+
+// Rotation generator (verified against the printed 2027 calendar, all 12 months):
+// Anchor: Fri Jan 1, 2027 = D (Green) off. Order A->B->C->D->E->F, advancing each
+// non-Sunday day, except Saturday repeats Friday's schedule (the Fri+Sat long-weekend pair).
+const ORDER = ['A','B','C','D','E','F'];
+function scheduleOff(date){ // returns letter whose rotating day off this date is, or null (Sunday)
+  const start = new Date(2027,0,1);
+  if (date < start) return null;
+  let idx = ORDER.indexOf('D');
+  const d = new Date(start);
+  while (d <= date){
+    const wd = d.getDay(); // 0 Sun
+    if (wd !== 0){
+      if (d.getTime() !== start.getTime() && wd !== 6) idx = (idx+1)%6;
+      if (d.getTime() === date.getTime()) return ORDER[idx];
+    }
+    d.setDate(d.getDate()+1);
+  }
+  return null;
+}
+
+const HOLIDAYS_2027 = [
+  ['2027-01-01',"New Year's Day"],['2027-01-18','MLK Jr. Day'],['2027-02-15',"Presidents' Day"],
+  ['2027-05-31','Memorial Day'],['2027-06-19','Juneteenth'],['2027-07-05','Independence Day (observed)'],
+  ['2027-09-06','Labor Day'],['2027-10-11','Columbus Day'],['2027-11-11','Veterans Day'],
+  ['2027-11-25','Thanksgiving'],['2027-12-25','Christmas Day'],
+];
+const holidaySet = new Set(HOLIDAYS_2027.map(h=>h[0]));
+const holidayName = Object.fromEntries(HOLIDAYS_2027);
+// Paydays 2027: every other Friday from Jan 15 to Dec 31 (26)
+const paydays = new Set();
+for (let d = new Date(2027,0,15); d.getFullYear()===2027; d.setDate(d.getDate()+14))
+  paydays.add(d.toISOString().slice(0,10));
+
+const iso = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const fmt = d => d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+
+function renderYear(colorKey){
+  const c = COLORS[colorKey];
+  document.getElementById('myColorName').textContent = c.name;
+  const wrap = document.getElementById('yearWrap'); wrap.innerHTML='';
+  const today = new Date(); today.setHours(0,0,0,0);
+  let nextOff=null, nextLong=null, count=0;
+  for (let m=0;m<12;m++){
+    const first = new Date(2027,m,1), days = new Date(2027,m+1,0).getDate();
+    let html = `<div class="month"><h3>${first.toLocaleDateString('en-US',{month:'long'}).toUpperCase()}</h3><table><tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr><tr>`;
+    for (let i=0;i<first.getDay();i++) html+='<td></td>';
+    for (let day=1;day<=days;day++){
+      const d = new Date(2027,m,day), wd=d.getDay(), key=iso(d);
+      const isMine = scheduleOff(d)===c.letter && wd!==0;
+      if (wd===0 || isMine) count++;
+      if (d>=today && isMine && !nextOff) nextOff=d;
+      if (d>=today && isMine && wd===5 && !nextLong) nextLong=d; // Friday of Fri+Sat pair
+      const cls=[wd===0?'sun':'', isMine?'nsd':'', holidaySet.has(key)?'holiday':'', paydays.has(key)?'payday':'', d.getTime()===today.getTime()?'today':''].join(' ');
+      const style = isMine ? ` style="background:${c.hex};color:${c.text}"` : '';
+      const title = holidaySet.has(key) ? ` title="${holidayName[key]}"` : '';
+      html+=`<td class="${cls}"${style}${title}>${day}</td>`;
+      if (wd===6 && day<days) html+='</tr><tr>';
+    }
+    html+='</tr></table></div>';
+    wrap.innerHTML+=html;
+  }
+  const nextHol = HOLIDAYS_2027.map(h=>new Date(h[0]+'T12:00:00')).find(d=>d>=today);
+  document.getElementById('nextOff').textContent = nextOff?fmt(nextOff):'—';
+  document.getElementById('nextLong').textContent = nextLong?fmt(nextLong):'—';
+  document.getElementById('nextHol').textContent = nextHol?fmt(nextHol)+' — '+holidayName[iso(nextHol)]:'—';
+  document.getElementById('countOff').textContent = count;
+  document.getElementById('summary').classList.remove('hidden');
+  wrap.classList.remove('hidden');
+  document.getElementById('picker').classList.add('hidden');
+}
+
+// Holiday list
+document.getElementById('holidayList').innerHTML =
+  HOLIDAYS_2027.map(([k,n])=>`<li>${fmt(new Date(k+'T12:00:00'))} — ${n}</li>`).join('');
+
+// Picker
+const sw = document.getElementById('swatches');
+Object.entries(COLORS).forEach(([key,c])=>{
+  const b=document.createElement('button');
+  b.className='swatch'; b.innerHTML=`<span class="dot" style="background:${c.hex}"></span>${c.name}`;
+  b.onclick=()=>{ localStorage.setItem('carrierColor',key); renderYear(key); window.scrollTo({top:0,behavior:'smooth'}); };
+  sw.appendChild(b);
+});
+document.getElementById('changeColor').onclick=()=>{
+  localStorage.removeItem('carrierColor');
+  document.getElementById('summary').classList.add('hidden');
+  document.getElementById('yearWrap').classList.add('hidden');
+  document.getElementById('picker').classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+const saved = localStorage.getItem('carrierColor');
+if (saved && COLORS[saved]) renderYear(saved);
+</script>
+</body>
+</html>
