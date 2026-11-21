@@ -75,3 +75,7 @@ day font 12px -> 14.5px, cell height 22px -> 32px, a little more padding.
 
 v1.6: one short hint line above the first calendar — "Tap once for AL, twice
 for SL" (AL in green, SL in blue). Nothing else; Thomas asked for just that line.
+
+v1.7: same as v1.6, plus the version number is back in the header subtitle
+("Calendar · v1.7 · Nov 2026 – Dec 2027") — Thomas couldn't tell whether the
+update had landed because v1.4 had dropped the version from the page.
