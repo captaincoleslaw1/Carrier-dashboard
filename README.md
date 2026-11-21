@@ -69,3 +69,6 @@ labels and values wrapped unevenly on a phone). New bar: a color chip + Change
 color pill on top, then two equal side-by-side panels (AL green meter, SL blue
 meter), each with the hours-left big, a thin meter of what's left, and the
 balance input underneath. Header slimmed down to match.
+
+v1.5: date numbers a tad bigger for fat fingers (Thomas's words — not too big):
+day font 12px -> 14.5px, cell height 22px -> 32px, a little more padding.
