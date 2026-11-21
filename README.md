@@ -85,3 +85,9 @@ but never un-hidden (a patch missed its target in renderYear), so it never
 appeared. Fixed, and this time verified by simulating a page load with a saved
 color: hint, balance bar, and calendar all show; picker hides. Lesson recorded:
 assert every patch replacement and test the load path, not just the logic.
+
+v1.9: same balance-card overflow fix Thomas found on Time Wiz — on phone-width
+screens the right AL/SL panel overflowed the blue card because "Balance + input
++ hrs" was wider than the panel and the panel wouldn't shrink. Grid columns are
+now minmax(0,1fr), panels have min-width:0 + overflow hidden, labels ellipsize,
+and the balance input flexes instead of sitting at a fixed 72px.
