@@ -105,3 +105,10 @@ AL green is Green carriers' NSD colour and the SL blue is Blue carriers' —
 changing the mark colours would just move the collision (and green/blue match
 the balance meters). A plain NSD has no tag; a leave day always does, whatever
 your colour.
+
+v1.12: Reset button added to the left of "Change color" in the sticky bar.
+Reset clears all marked AL/SL days but keeps the entered AL/SL balances (and
+the picked colour). It asks first ("Clear all your marked AL/SL days? Your
+balances stay as entered.") so a stray tap can't wipe a plan; with nothing
+marked it's a no-op. Verified: confirm clears marks only, balances and colour
+untouched; declining the prompt leaves marks alone.

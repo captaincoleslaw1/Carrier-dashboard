@@ -22,8 +22,9 @@
   #balanceBar .barTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
   #barColorChip{display:flex;align-items:center;gap:8px;font-size:16px}
   #barColorChip .cdot{width:16px;height:16px;border-radius:50%;border:2px solid #fff;display:inline-block}
-  #balanceBar #changeColor{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;
+  #balanceBar #changeColor,#balanceBar #resetBtn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;
     border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer;text-decoration:none}
+  .barBtns{display:flex;gap:8px}
   #balanceBar .barGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
   .balPanel{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:10px 12px;min-width:0;overflow:hidden}
   .balLabel{font-size:11px;letter-spacing:.06em;text-transform:uppercase;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -66,7 +67,7 @@
 <body>
 <header>
   <h1>📬 Carrier Dashboard</h1>
-  <p>Calendar · v1.11 · Nov 2026 – Dec 2027</p>
+  <p>Calendar · v1.12 · Nov 2026 – Dec 2027</p>
 </header>
 <main>
   <!-- Step 1: pick your color -->
@@ -79,7 +80,7 @@
   <div id="balanceBar" class="hidden">
     <div class="barTop">
       <span id="barColorChip"><span class="cdot"></span><b id="barColor"></b></span>
-      <button id="changeColor">Change color</button>
+      <span class="barBtns"><button id="resetBtn">Reset</button><button id="changeColor">Change color</button></span>
     </div>
     <div class="barGrid">
       <div class="balPanel alPanel">
@@ -264,6 +265,11 @@ Object.entries(COLORS).forEach(([key,c])=>{
   b.onclick=()=>{ state.color=key; save(); renderYear(); window.scrollTo({top:0,behavior:'smooth'}); };
   sw.appendChild(b);
 });
+document.getElementById('resetBtn').onclick=()=>{
+  if (!Object.keys(state.marks).length) return;
+  if (!confirm('Clear all your marked AL/SL days? Your balances stay as entered.')) return;
+  state.marks={}; save(); renderYear(); updateBalances();
+};
 document.getElementById('changeColor').onclick=()=>{
   state.color=null; save();
   document.getElementById('balanceBar').classList.add('hidden');
