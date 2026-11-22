@@ -98,3 +98,10 @@ holidays and indistinguishable. Brown (E) darkened from golden brown #a67c2e
 to deep chocolate #7c4a1e: Thomas (a bit colour-blind) found brown blended
 into red; the new brown separates from red by brightness even where the hues
 are hard to tell apart.
+
+v1.11: AL/SL marks are no longer colour-only. A marked day now also carries a
+small white "AL"/"SL" tag in the corner plus a white inset ring, because the
+AL green is Green carriers' NSD colour and the SL blue is Blue carriers' —
+changing the mark colours would just move the collision (and green/blue match
+the balance meters). A plain NSD has no tag; a leave day always does, whatever
+your colour.

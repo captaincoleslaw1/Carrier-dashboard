@@ -40,7 +40,11 @@
   .month h3{margin:2px 0 8px;text-align:center;letter-spacing:.06em;font-size:14px}
   table{width:100%;border-collapse:collapse;table-layout:fixed}
   th{font-size:11px;color:var(--muted);padding:3px 0}
-  td{text-align:center;font-size:14.5px;padding:6px 0;border-radius:5px;height:32px}
+  td{text-align:center;font-size:14.5px;padding:6px 0;border-radius:5px;height:32px;position:relative}
+  .mtag{position:absolute;right:2px;bottom:1px;font-size:8px;font-weight:800;line-height:1.2;background:#fff;padding:0 2px;border-radius:2px;letter-spacing:.02em}
+  td.al .mtag{color:#17662e}
+  td.sl .mtag{color:#174e86}
+  td.al,td.sl{box-shadow:inset 0 0 0 2px rgba(255,255,255,.9)}
   td.day{cursor:pointer}
   td.sun{color:#999;background:#f0f0f0;cursor:default}
   td.nsd{font-weight:700}
@@ -62,7 +66,7 @@
 <body>
 <header>
   <h1>📬 Carrier Dashboard</h1>
-  <p>Calendar · v1.10 · Nov 2026 – Dec 2027</p>
+  <p>Calendar · v1.11 · Nov 2026 – Dec 2027</p>
 </header>
 <main>
   <!-- Step 1: pick your color -->
@@ -189,6 +193,7 @@ function paintCell(td){
   else if (mark==='SL') td.classList.add('sl');
   else if (holidaySet.has(key)) td.classList.add('holiday');
   else if (scheduleOff(d)===c.letter){ td.classList.add('nsd'); td.style.background=c.hex; td.style.color=c.text; }
+  td.innerHTML = d.getDate() + (mark ? `<span class="mtag">${mark}</span>` : '');
   if (paydays.has(key)) td.classList.add('payday');
   const today = new Date(); today.setHours(0,0,0,0);
   if (d.toDateString()===today.toDateString()) td.classList.add('today');
