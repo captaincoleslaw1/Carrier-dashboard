@@ -91,3 +91,10 @@ screens the right AL/SL panel overflowed the blue card because "Balance + input
 + hrs" was wider than the panel and the panel wouldn't shrink. Grid columns are
 now minmax(0,1fr), panels have min-width:0 + overflow hidden, labels ellipsize,
 and the balance input flexes instead of sitting at a fixed 72px.
+
+v1.10: holiday colour changed for everyone — red -> deep purple (#7b3294), a
+colour no rotation uses, because Red carriers' days off were red like the
+holidays and indistinguishable. Brown (E) darkened from golden brown #a67c2e
+to deep chocolate #7c4a1e: Thomas (a bit colour-blind) found brown blended
+into red; the new brown separates from red by brightness even where the hues
+are hard to tell apart.
